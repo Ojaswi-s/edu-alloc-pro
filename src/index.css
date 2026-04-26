@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark intelligence base */
+    --background: 222 47% 6%;          /* Ink #0A0F1E */
+    --foreground: 210 40% 96%;
+
+    --surface: 224 39% 11%;            /* slightly lifted */
+    --surface-elevated: 226 39% 14%;
+    --surface-mid: 224 41% 18%;        /* Ink Mid */
+    --sidebar-bg: 222 47% 6%;
+    --overlay: 226 41% 18%;
+
+    --card: 224 39% 11%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 226 39% 14%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 217 91% 60%;            /* Electric blue #2563EB */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 217 91% 65%;
+    --primary-dark: 224 76% 48%;
+    --primary-light: 214 95% 93%;
+
+    --secondary: 226 39% 18%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 224 30% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --accent-teal: 174 84% 32%;
+    --accent-teal-light: 167 85% 89%;
+
+    --destructive: 350 89% 50%;        /* Rose #E11D48 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 30% 18%;
+    --input: 224 30% 16%;
+    --ring: 217 91% 60%;
+
+    /* DI semantic */
+    --di-critical: 350 89% 50%;
+    --di-critical-bg: 350 89% 96%;
+    --di-high: 30 90% 44%;
+    --di-high-bg: 48 96% 89%;
+    --di-moderate: 217 91% 60%;
+    --di-moderate-bg: 214 95% 93%;
+    --di-stable: 158 89% 30%;
+    --di-stable-bg: 152 76% 90%;
+    --di-unknown: 215 20% 65%;
+
+    /* Status */
+    --success: 158 89% 30%;
+    --warning: 30 90% 44%;
+    --info: 217 91% 60%;
+
+    --radius: 0.625rem;
+
+    /* Gradients */
+    --gradient-brand: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 45%));
+    --gradient-critical: linear-gradient(135deg, hsl(350 89% 50%), hsl(350 89% 38%));
+    --gradient-surface: linear-gradient(180deg, hsl(224 39% 13%), hsl(224 39% 9%));
+    --gradient-glow: radial-gradient(60% 60% at 50% 0%, hsl(217 91% 60% / 0.18), transparent);
+
+    /* Shadows */
+    --shadow-card: 0 1px 0 0 hsl(220 40% 98% / 0.04) inset, 0 8px 24px -12px hsl(222 47% 2% / 0.6);
+    --shadow-elevated: 0 1px 0 0 hsl(220 40% 98% / 0.06) inset, 0 24px 60px -20px hsl(222 47% 2% / 0.8);
+    --shadow-glow: 0 0 0 1px hsl(217 91% 60% / 0.3), 0 8px 30px hsl(217 91% 60% / 0.25);
+
+    /* Sidebar */
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 215 20% 75%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 39% 12%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 224 30% 14%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .light {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Tamil', system-ui, sans-serif; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(60% 50% at 80% -10%, hsl(217 91% 60% / 0.08), transparent),
+      radial-gradient(40% 35% at 0% 100%, hsl(174 84% 32% / 0.06), transparent);
+    background-attachment: fixed;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  html[lang="mr"], html[lang="hi"] body { font-family: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif; line-height: 1.6; }
+  html[lang="te"] body { font-family: 'Noto Sans Telugu', 'Inter', system-ui, sans-serif; }
+  html[lang="kn"] body { font-family: 'Noto Sans Kannada', 'Inter', system-ui, sans-serif; }
+  html[lang="ta"] body { font-family: 'Noto Sans Tamil', 'Inter', system-ui, sans-serif; }
+
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  ::selection { background: hsl(217 91% 60% / 0.4); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(224 30% 22%); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(217 91% 60% / 0.5); background-clip: content-box; border: 2px solid transparent; }
+}
+
+@layer components {
+  .glass-panel {
+    background: linear-gradient(180deg, hsl(224 39% 14% / 0.85), hsl(224 39% 10% / 0.85));
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(224 30% 22% / 0.6);
+  }
+  .stat-card {
+    background: var(--gradient-surface);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-card);
+  }
+  .di-pulse {
+    box-shadow: 0 0 0 0 hsl(var(--di-critical) / 0.6);
+    animation: di-pulse 2s infinite;
+  }
+  .glow-ring {
+    box-shadow: 0 0 0 1px hsl(217 91% 60% / 0.4), 0 0 24px hsl(217 91% 60% / 0.25);
+  }
+  .num-mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+}
+
+@keyframes di-pulse {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--di-critical) / 0.55); }
+  70%  { box-shadow: 0 0 0 14px hsl(var(--di-critical) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--di-critical) / 0); }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Leaflet dark-theme overrides */
+@keyframes diPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.6), 0 0 0 2px rgba(10,15,28,0.9); }
+  70%  { box-shadow: 0 0 0 12px rgba(239,68,68,0), 0 0 0 2px rgba(10,15,28,0.9); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0), 0 0 0 2px rgba(10,15,28,0.9); }
+}
+.leaflet-container {
+  background: hsl(var(--surface));
+  font-family: inherit;
+  outline: none;
+}
+.leaflet-control-attribution {
+  background: hsl(var(--surface) / 0.7) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  backdrop-filter: blur(6px);
+}
+.leaflet-control-attribution a { color: hsl(var(--primary)) !important; }
+.eduallocpro-tip {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.eduallocpro-tip::before { display: none !important; }
+.leaflet-marker-icon.eduallocpro-marker { background: transparent; border: 0; }
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, hsl(220 40% 98% / 0.06), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right { animation: slide-in-right 0.25s ease-out; }
+
+@keyframes fade-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.animate-fade-up { animation: fade-up 0.4s ease-out both; }
