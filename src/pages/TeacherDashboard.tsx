@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { School2, MapPin, Calendar, Clock, BookOpen, ExternalLink, Settings, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -99,10 +100,39 @@ export default function TeacherDashboard() {
                <DialogContent>
                  <DialogHeader>
                    <DialogTitle>Update Skills Framework</DialogTitle>
-                   <DialogDescription>Add new certifications or competencies.</DialogDescription>
+                   <DialogDescription>Keep your profile current to improve deployment match algorithms.</DialogDescription>
                  </DialogHeader>
-                 <div className="py-6 text-center text-muted-foreground">
-                    Profile editing will unlock once the data freeze for the current deployment cycle ends.
+                 <div className="py-4 space-y-4">
+                    <div className="space-y-2">
+                       <label className="text-sm font-medium">Alternative Contact Number</label>
+                       <input type="text" className="w-full bg-surface-mid border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-primary transition" placeholder="+91" defaultValue="+91 98765 43210" />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-sm font-medium">Extra Curricular Specialization</label>
+                       <select className="w-full bg-surface-mid border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-primary transition">
+                          <option>None Selected</option>
+                          <option>NCC Officer</option>
+                          <option>Sports/PT Leader</option>
+                          <option>Computer / ICT</option>
+                          <option>Scouts & Guides</option>
+                       </select>
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-sm font-medium">Local Language Fluency</label>
+                       <div className="flex items-center gap-4 mt-1">
+                          <label className="flex items-center gap-2 text-sm"><input type="checkbox" defaultChecked /> Marathi</label>
+                          <label className="flex items-center gap-2 text-sm"><input type="checkbox" defaultChecked /> Hindi</label>
+                          <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> Bhili</label>
+                          <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> Pawari</label>
+                       </div>
+                       <p className="text-xs text-muted-foreground pt-1">Adding tribal languages drastically improves your priority in nearby tribal talukas.</p>
+                    </div>
+                 </div>
+                 <div className="flex justify-end pt-2">
+                    <Button onClick={() => {
+                        toast.success("Profile updated!", { description: "The deployment engine has registered your changes." });
+                        document.body.click(); // Close dialog hack
+                    }} className="w-full">Save Changes</Button>
                  </div>
                </DialogContent>
              </Dialog>

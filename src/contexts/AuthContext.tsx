@@ -26,76 +26,96 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // In production, update this to your Render URL: e.g., https://your-app.onrender.com
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
   useEffect(() => {
-    const storedUser = localStorage.getItem('edu_beacon_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const checkAuth = async () => {
+        const token = localStorage.getItem('edu_beacon_token');
+        if (token) {
+            try {
+                const response = await fetch(`${BASE_URL}/api/user/me?token=${token}`);
+                if (response.ok) {
+                    const userData = await response.json();
+                    setUser(userData);
+                } else {
+                    localStorage.removeItem('edu_beacon_token');
+                }
+            } catch (err) {
+                console.error("Auth check failed", err);
+            }
+        }
+        setIsLoading(false);
+    };
+    checkAuth();
   }, []);
 
   const loginWithPassword = async (email: string, password: string) => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return true; 
+    try {
+        const response = await fetch(`${BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('edu_beacon_token', data.access_token);
+            // After successful password, we still show OTP step in UI for demo
+            return true;
+        }
+    } catch (err) {
+        console.error("Login failed", err);
+    }
+    return false; 
   };
 
   const signup = async (email: string, password: string, roleInput: string) => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const role: Role = (roleInput as Role) || 'teacher';
-    
-    // In a real app we would create the user in backend. 
-    // Here we jump straight to login.
-    const loggedInUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: email.split('@')[0], 
-      email,
-      role,
-    };
-
-    setUser(loggedInUser);
-    localStorage.setItem('edu_beacon_user', JSON.stringify(loggedInUser));
-    return true;
+    try {
+        const response = await fetch(`${BASE_URL}/api/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, role: roleInput }),
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('edu_beacon_token', data.access_token);
+            
+            // Get user info
+            const userRes = await fetch(`${BASE_URL}/api/user/me?token=${data.access_token}`);
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                setUser(userData);
+                return true;
+            }
+        }
+    } catch (err) {
+        console.error("Signup failed", err);
+    }
+    return false;
   };
 
   const verifyOtp = async (email: string, otp: string) => {
+    // Simulated delay
     await new Promise(resolve => setTimeout(resolve, 800));
     if (otp !== '123456') return false;
 
-    let role: Role = 'collector';
-    let name = 'Dr. M. Pawar';
-    let id = 'C1';
-    
-    if (email.includes('school')) {
-      role = 'school';
-      name = 'Admin - ZP School Taloda';
-      id = 'S1045';
-    } else if (email.includes('teacher')) {
-      role = 'teacher';
-      name = 'Priya Deshmukh';
-      id = 'T1';
-    } else if (email.includes('collector')) {
-      role = 'collector';
-      name = 'Dr. M. Pawar';
-      id = 'C1';
-    } else {
-        role = 'collector'; // fallback
+    const token = localStorage.getItem('edu_beacon_token');
+    if (token) {
+        const response = await fetch(`${BASE_URL}/api/user/me?token=${token}`);
+        if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+            return true;
+        }
     }
-
-    const loggedInUser: User = {
-      id,
-      name,
-      email,
-      role,
-    };
-
-    setUser(loggedInUser);
-    localStorage.setItem('edu_beacon_user', JSON.stringify(loggedInUser));
-    return true;
+    return false;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('edu_beacon_user');
+    localStorage.removeItem('edu_beacon_token');
   };
 
   return (
