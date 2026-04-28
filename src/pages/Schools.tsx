@@ -1,13 +1,12 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type School, type DILevel } from '@/data/mockData';
+import { SCHOOLS, type School, type DILevel } from '@/data/mockData';
 import { DIBadge } from '@/components/school/DIBadge';
 import { SchoolDetailPanel } from '@/components/school/SchoolDetailPanel';
 import { Link } from 'react-router-dom';
 import {
   Search, Filter, ArrowUpDown, ArrowUp, ArrowDown,
   School2, ShieldAlert, Users, GraduationCap, ChevronLeft, ChevronRight,
-  Loader2,
 } from 'lucide-react';
 
 const PAGE_SIZE = 25;
@@ -16,12 +15,8 @@ const BLOCKS = ['Akkalkuwa', 'Akrani', 'Nandurbar', 'Navapur', 'Shahada', 'Talod
 
 type SortKey = 'di' | 'name' | 'pupils' | 'teachers' | 'ptr' | 'totalVacancies';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-
 export default function Schools() {
   const { t } = useTranslation();
-  const [schools, setSchools] = useState<School[]>([]);
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<DILevel | 'all'>('all');
   const [blockFilter, setBlockFilter] = useState<string>('all');
@@ -31,21 +26,8 @@ export default function Schools() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<School | null>(null);
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/schools`)
-      .then(res => res.json())
-      .then(data => {
-        setSchools(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch schools", err);
-        setLoading(false);
-      });
-  }, []);
-
   const filtered = useMemo(() => {
-    let list = schools;
+    let list = SCHOOLS;
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(s =>
@@ -65,7 +47,7 @@ export default function Schools() {
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [schools, query, levelFilter, blockFilter, rteOnly, sortKey, sortDir]);
+  }, [query, levelFilter, blockFilter, rteOnly, sortKey, sortDir]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -101,20 +83,11 @@ export default function Schools() {
             <School2 className="size-7 text-primary" /> {t('nav.schools')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {t('dashboard.district')} · {filtered.length} {filtered.length !== schools.length ? `of ${schools.length}` : ''} schools
+            {t('dashboard.district')} · {filtered.length} {filtered.length !== SCHOOLS.length ? `of ${SCHOOLS.length}` : ''} schools
           </p>
         </div>
       </div>
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
-          <Loader2 className="size-10 animate-spin text-primary" />
-          <p className="text-sm font-medium">Fetching district data...</p>
-        </div>
-      )}
-
-      {!loading && (
-        <>
       {/* Filters bar */}
       <div className="flex flex-wrap gap-2 items-center">
         <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-surface-elevated border border-border flex-1 min-w-[200px] max-w-sm">
@@ -156,7 +129,7 @@ export default function Schools() {
       {/* Summary chips */}
       <div className="flex gap-2 flex-wrap">
         {LEVELS.map(l => {
-          const count = schools.filter(s => s.level === l).length;
+          const count = SCHOOLS.filter(s => s.level === l).length;
           return (
             <button
               key={l}
@@ -303,8 +276,6 @@ export default function Schools() {
 
       {/* School detail slide-over */}
       {selected && <SchoolDetailPanel school={selected} onClose={() => setSelected(null)} />}
-        </>
-      )}
     </div>
   );
 }

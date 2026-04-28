@@ -1,14 +1,62 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Teacher } from '@/data/mockData';
+import { TEACHERS, SCHOOLS, type Teacher } from '@/data/mockData';
 import { Link } from 'react-router-dom';
 import {
   Search, ArrowUpDown, ArrowUp, ArrowDown,
   Users, Award, MapPin, Clock, AlertTriangle, ChevronLeft, ChevronRight,
-  Loader2,
 } from 'lucide-react';
 
+type SortKey = 'name' | 'matchScore' | 'retentionScore' | 'distance' | 'experience';
+
 const PAGE_SIZE = 20;
+
+// Extend mock teachers list with generated entries so the page feels full
+const SUBJECT_POOL = ['PHY', 'CHM', 'MAT', 'ENG', 'HIN'] as const;
+const NAME_POOL = [
+  'Priya Deshmukh','Rajesh Patil','Sunita Pawar','Anil Gavit','Kavita Mahajan',
+  'Suresh Borse','Anita Sonawane','Vinod Chaudhari','Rekha Valvi','Deepak Tadvi',
+  'Smita Nandurkar','Ramesh Bhil','Geeta Aher','Prakash Pawara','Leela Vasave',
+  'Santosh Jadhav','Meena Kokane','Vijay Kale','Usha Deore','Hemant Wagh',
+  'Lata Shinde','Manoj Suryavanshi','Asha Bhagat','Naresh Padvi','Rohini Gavit',
+  'Dilip Mahale','Sanjay Tadvi','Pooja Valvi','Kiran Ahire','Tushar Chavan',
+];
+const BLOCK_POSTINGS = [
+  'ZP School Shahada', 'Govt School Navapur', 'Tribal Ashram Akkalkuwa',
+  'GP Taloda', 'Adivasi School Akrani', 'Govt Higher Nandurbar',
+  'ZP School Dhadgaon', 'Ashram School Toranmal', 'GP School Bilgaon',
+];
+const LANG_POOL = [
+  ['mr', 'hi', 'en'], ['mr', 'hi'], ['mr', 'bhili'], ['mr'], ['hi', 'en'],
+  ['mr', 'te'], ['mr', 'hi', 'bhili'], ['en'],
+];
+
+function seededRand(seed: number) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+const ALL_TEACHERS: Teacher[] = (() => {
+  const base = [...TEACHERS];
+  const r = seededRand(77);
+  for (let i = base.length; i < NAME_POOL.length; i++) {
+    const exp = 2 + Math.floor(r() * 20);
+    base.push({
+      id: `T${i + 1}`,
+      name: NAME_POOL[i],
+      subject: SUBJECT_POOL[Math.floor(r() * SUBJECT_POOL.length)],
+      experience: exp,
+      experienceLevel: exp > 15 ? 'senior' : exp > 5 ? 'mid' : 'junior',
+      status: r() > 0.9 ? 'leave' : r() > 0.8 ? 'transferring' : 'active',
+      currentPosting: BLOCK_POSTINGS[Math.floor(r() * BLOCK_POSTINGS.length)],
+      distance: 5 + Math.floor(r() * 55),
+      matchScore: 50 + Math.floor(r() * 50),
+      retentionScore: 30 + Math.floor(r() * 70),
+      languages: LANG_POOL[Math.floor(r() * LANG_POOL.length)],
+    });
+  }
+  return base;
+})();
 
 const LANG_LABELS: Record<string, string> = {
   mr: 'मराठी', hi: 'हिंदी', en: 'EN', bhili: 'भिली', te: 'తెలుగు',
@@ -22,38 +70,22 @@ const SUBJECT_COLORS: Record<string, string> = {
   HIN: 'text-purple-400 bg-purple-400/10 border-purple-400/30',
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-
 export default function Teachers() {
   const { t } = useTranslation();
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [talukaFilter, setTalukaFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [expLevelFilter, setExpLevelFilter] = useState<string>('all');
+  const [langFilter, setLangFilter] = useState<string>('all');
   const [sortKey, setSortKey] = useState<SortKey>('matchScore');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
 
-  const TALUKAS = ['Shahada', 'Navapur', 'Akkalkuwa', 'Taloda', 'Akrani', 'Nandurbar', 'Dhadgaon', 'Toranmal', 'Bilgaon'];
-  const SUBJECT_POOL = ['PHY', 'CHM', 'MAT', 'ENG', 'HIN'] as const;
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/teachers`)
-      .then(res => res.json())
-      .then(data => {
-        setTeachers(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch teachers", err);
-        setLoading(false);
-      });
-  }, []);
+  const TALUKAS = ['Shahada', 'Navapur', 'Akkalkuwa', 'Taloda', 'Akrani', 'Nandurbar', 'Dhadgaon'];
 
   const filtered = useMemo(() => {
-    let list = teachers;
+    let list = ALL_TEACHERS;
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(t =>
@@ -66,13 +98,15 @@ export default function Teachers() {
     if (talukaFilter !== 'all') list = list.filter(t => t.currentPosting.includes(talukaFilter));
     if (riskFilter === 'high') list = list.filter(t => t.retentionScore < 55);
     if (riskFilter === 'safe') list = list.filter(t => t.retentionScore >= 55);
+    if (expLevelFilter !== 'all') list = list.filter(t => t.experienceLevel === expLevelFilter);
+    if (langFilter !== 'all') list = list.filter(t => t.languages.includes(langFilter));
 
     return [...list].sort((a, b) => {
       const av = a[sortKey]; const bv = b[sortKey];
       const cmp = typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number);
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [teachers, query, subjectFilter, talukaFilter, riskFilter, sortKey, sortDir]);
+  }, [query, subjectFilter, talukaFilter, riskFilter, expLevelFilter, langFilter, sortKey, sortDir]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -89,9 +123,9 @@ export default function Teachers() {
       : <ArrowUpDown className="size-3.5 opacity-40" />;
 
   // Stats
-  const risky = teachers.filter(t => t.retentionScore < 55).length;
-  const avgMatch = teachers.length ? Math.round(teachers.reduce((s, t) => s + t.matchScore, 0) / teachers.length) : 0;
-  const avgExp   = teachers.length ? Math.round(teachers.reduce((s, t) => s + t.experience, 0) / teachers.length) : 0;
+  const risky = ALL_TEACHERS.filter(t => t.retentionScore < 55).length;
+  const avgMatch = Math.round(ALL_TEACHERS.reduce((s, t) => s + t.matchScore, 0) / ALL_TEACHERS.length);
+  const avgExp   = Math.round(ALL_TEACHERS.reduce((s, t) => s + t.experience, 0) / ALL_TEACHERS.length);
 
   return (
     <div className="p-4 lg:p-6 space-y-5">
@@ -102,24 +136,15 @@ export default function Teachers() {
             <Users className="size-7 text-primary" /> {t('nav.teachers')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {t('dashboard.district')} · {filtered.length} {filtered.length !== teachers.length ? `of ${teachers.length}` : ''} teachers registered
+            {t('dashboard.district')} · {ALL_TEACHERS.length} teachers registered
           </p>
         </div>
       </div>
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
-          <Loader2 className="size-10 animate-spin text-primary" />
-          <p className="text-sm font-medium">Fetching teacher database...</p>
-        </div>
-      )}
-
-      {!loading && (
-        <>
       {/* Stat chips */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Teachers', value: teachers.length, color: 'text-foreground' },
+          { label: 'Total Teachers', value: ALL_TEACHERS.length, color: 'text-foreground' },
           { label: 'Avg. Match Score', value: `${avgMatch}%`, color: 'text-accent-teal' },
           { label: 'Avg. Experience', value: `${avgExp}y`, color: 'text-primary' },
           { label: 'Retention Risk', value: risky, color: 'text-warning' },
@@ -157,6 +182,26 @@ export default function Teachers() {
         >
           <option value="all">All Talukas</option>
           {TALUKAS.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={expLevelFilter}
+          onChange={e => { setExpLevelFilter(e.target.value); setPage(1); }}
+          className="text-sm bg-surface-elevated border border-border rounded-md px-2 py-2 outline-none hover:border-primary/50 transition truncate w-36"
+        >
+          <option value="all">All Experience</option>
+          <option value="junior">Junior (<5y)</option>
+          <option value="mid">Mid-Level (5-15y)</option>
+          <option value="senior">Senior (15y+)</option>
+        </select>
+        <select
+          value={langFilter}
+          onChange={e => { setLangFilter(e.target.value); setPage(1); }}
+          className="text-sm bg-surface-elevated border border-border rounded-md px-2 py-2 outline-none hover:border-primary/50 transition truncate w-36"
+        >
+          <option value="all">All Languages</option>
+          {Object.entries(LANG_LABELS).map(([code, label]) => (
+            <option key={code} value={code}>{label}</option>
+          ))}
         </select>
         <select
           value={riskFilter}
@@ -229,9 +274,14 @@ export default function Teachers() {
                     </div>
                   </td>
                   <td className="p-3">
-                    <span className={`inline-block px-2 py-0.5 rounded border text-[11px] font-bold font-mono ${SUBJECT_COLORS[teacher.subject] ?? 'text-muted-foreground bg-surface-mid border-border'}`}>
-                      {teacher.subject}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`inline-block w-fit px-2 py-0.5 rounded border text-[11px] font-bold font-mono ${SUBJECT_COLORS[teacher.subject] ?? 'text-muted-foreground bg-surface-mid border-border'}`}>
+                        {teacher.subject}
+                      </span>
+                      <span className={`text-[10px] uppercase tracking-tighter font-bold ${teacher.status === 'active' ? 'text-success' : 'text-warning'}`}>
+                        {teacher.status}
+                      </span>
+                    </div>
                   </td>
                   <td className="p-3 text-xs max-w-[180px] truncate">{teacher.currentPosting}</td>
                   <td className="p-3 text-center num-mono text-sm font-semibold">{teacher.experience}y</td>
@@ -266,7 +316,7 @@ export default function Teachers() {
                   <td className="p-3">
                     <Link
                       to="/deploy"
-                      state={{ school: teachers[0] }} // Placeholder, ideally specific school
+                      state={{ school: SCHOOLS[0] }}
                       className="text-xs font-semibold text-primary hover:underline whitespace-nowrap"
                     >
                       {t('school.deployTeacher')} →
@@ -314,8 +364,6 @@ export default function Teachers() {
             </button>
           </div>
         </div>
-      )}
-        </>
       )}
     </div>
   );

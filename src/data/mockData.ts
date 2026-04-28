@@ -8,8 +8,18 @@ export interface School {
 }
 
 export interface Teacher {
-  id: string; name: string; subject: string; experience: number; currentPosting: string;
-  distance: number; matchScore: number; retentionScore: number; languages: string[];
+  id: string;
+  name: string;
+  subject: string;
+  experience: number;
+  experienceLevel: 'junior' | 'mid' | 'senior';
+  status: 'active' | 'leave' | 'transferring';
+  currentPosting: string;
+  distance: number;
+  matchScore: number;
+  retentionScore: number;
+  languages: string[];
+  bio?: string;
 }
 
 const blocks = ['Akkalkuwa', 'Akrani', 'Nandurbar', 'Navapur', 'Shahada', 'Taloda'];
@@ -66,11 +76,11 @@ export const STATS = {
 };
 
 export const TEACHERS: Teacher[] = [
-  { id: 'T1', name: 'Priya Deshmukh', subject: 'PHY', experience: 8, currentPosting: 'ZP School Shahada', distance: 12, matchScore: 94, retentionScore: 82, languages: ['mr', 'hi', 'en'] },
-  { id: 'T2', name: 'Rajesh Patil', subject: 'PHY', experience: 12, currentPosting: 'Govt School Navapur', distance: 28, matchScore: 88, retentionScore: 76, languages: ['mr', 'hi'] },
-  { id: 'T3', name: 'Sunita Pawar', subject: 'PHY', experience: 5, currentPosting: 'Tribal Ashram Akkalkuwa', distance: 8, matchScore: 86, retentionScore: 91, languages: ['mr', 'bhili'] },
-  { id: 'T4', name: 'Anil Gavit', subject: 'PHY', experience: 15, currentPosting: 'GP Taloda', distance: 34, matchScore: 79, retentionScore: 48, languages: ['mr', 'hi'] },
-  { id: 'T5', name: 'Kavita Mahajan', subject: 'PHY', experience: 6, currentPosting: 'Adivasi School Akrani', distance: 18, matchScore: 75, retentionScore: 88, languages: ['mr'] },
+  { id: 'T1', name: 'Priya Deshmukh', subject: 'PHY', experience: 8, experienceLevel: 'mid', status: 'active', currentPosting: 'ZP School Shahada', distance: 12, matchScore: 94, retentionScore: 82, languages: ['mr', 'hi', 'en'], bio: 'Passionate about modern physics and practical learning.' },
+  { id: 'T2', name: 'Rajesh Patil', subject: 'PHY', experience: 12, experienceLevel: 'senior', status: 'active', currentPosting: 'Govt School Navapur', distance: 28, matchScore: 88, retentionScore: 76, languages: ['mr', 'hi'] },
+  { id: 'T3', name: 'Sunita Pawar', subject: 'PHY', experience: 5, experienceLevel: 'junior', status: 'active', currentPosting: 'Tribal Ashram Akkalkuwa', distance: 8, matchScore: 86, retentionScore: 91, languages: ['mr', 'bhili'] },
+  { id: 'T4', name: 'Anil Gavit', subject: 'PHY', experience: 15, experienceLevel: 'senior', status: 'transferring', currentPosting: 'GP Taloda', distance: 34, matchScore: 79, retentionScore: 48, languages: ['mr', 'hi'] },
+  { id: 'T5', name: 'Kavita Mahajan', subject: 'PHY', experience: 6, experienceLevel: 'mid', status: 'active', currentPosting: 'Adivasi School Akrani', distance: 18, matchScore: 75, retentionScore: 88, languages: ['mr'] },
 ];
 
 export const PENDING_ASSIGNMENTS = SCHOOLS.slice(0, 12).map((s, i) => ({

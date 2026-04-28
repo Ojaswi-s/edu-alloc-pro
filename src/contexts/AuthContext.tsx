@@ -16,6 +16,7 @@ interface AuthContextType {
   loginWithPassword: (email: string, password: string) => Promise<boolean>;
   verifyOtp: (email: string, otp: string) => Promise<boolean>;
   signup: (email: string, password: string, role: string) => Promise<boolean>;
+  updateUser: (data: Partial<User>) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -26,100 +27,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On Vercel, we can use relative paths if both front and back are on the same domain
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-
   useEffect(() => {
-    const checkAuth = async () => {
-        const token = localStorage.getItem('edu_beacon_token');
-        if (token) {
-            try {
-                const response = await fetch(`${BASE_URL}/api/user/me?token=${token}`);
-                if (response.ok) {
-                    const userData = await response.json();
-                    setUser(userData);
-                } else {
-                    localStorage.removeItem('edu_beacon_token');
-                }
-            } catch (err) {
-                console.error("Auth check failed", err);
-            }
-        }
-        setIsLoading(false);
-    };
-    checkAuth();
+    const storedUser = localStorage.getItem('edu_beacon_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
   }, []);
 
   const loginWithPassword = async (email: string, password: string) => {
-    try {
-        const response = await fetch(`${BASE_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('edu_beacon_token', data.access_token);
-            // After successful password, we still show OTP step in UI for demo
-            return true;
-        }
-    } catch (err) {
-        console.error("Login failed", err);
-    }
-    return false; 
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return true; 
   };
 
   const signup = async (email: string, password: string, roleInput: string) => {
-    try {
-        const response = await fetch(`${BASE_URL}/api/auth/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, role: roleInput }),
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('edu_beacon_token', data.access_token);
-            
-            // Get user info
-            const userRes = await fetch(`${BASE_URL}/api/user/me?token=${data.access_token}`);
-            if (userRes.ok) {
-                const userData = await userRes.json();
-                setUser(userData);
-                return true;
-            }
-        }
-    } catch (err) {
-        console.error("Signup failed", err);
-    }
-    return false;
+    await new Promise(resolve => setTimeout(resolve, 800));
+    const role: Role = (roleInput as Role) || 'teacher';
+    
+    // In a real app we would create the user in backend. 
+    // Here we jump straight to login.
+    const loggedInUser: User = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: email.split('@')[0], 
+      email,
+      role,
+    };
+
+    setUser(loggedInUser);
+    localStorage.setItem('edu_beacon_user', JSON.stringify(loggedInUser));
+    return true;
   };
 
   const verifyOtp = async (email: string, otp: string) => {
-    // Simulated delay
     await new Promise(resolve => setTimeout(resolve, 800));
     if (otp !== '123456') return false;
 
-    const token = localStorage.getItem('edu_beacon_token');
-    if (token) {
-        const response = await fetch(`${BASE_URL}/api/user/me?token=${token}`);
-        if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-            return true;
-        }
+    let role: Role = 'collector';
+    let name = 'Dr. M. Pawar';
+    let id = 'C1';
+    
+    if (email.includes('school')) {
+      role = 'school';
+      name = 'Admin - ZP School Taloda';
+      id = 'S1045';
+    } else if (email.includes('teacher')) {
+      role = 'teacher';
+      name = 'Priya Deshmukh';
+      id = 'T1';
+    } else if (email.includes('collector')) {
+      role = 'collector';
+      name = 'Dr. M. Pawar';
+      id = 'C1';
+    } else {
+        role = 'collector'; // fallback
     }
-    return false;
+
+    const loggedInUser: User = {
+      id,
+      name,
+      email,
+      role,
+    };
+
+    setUser(loggedInUser);
+    localStorage.setItem('edu_beacon_user', JSON.stringify(loggedInUser));
+    return true;
+  };
+
+  const updateUser = (data: Partial<User>) => {
+    if (!user) return;
+    const updated = { ...user, ...data };
+    setUser(updated);
+    localStorage.setItem('edu_beacon_user', JSON.stringify(updated));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('edu_beacon_token');
+    localStorage.removeItem('edu_beacon_user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loginWithPassword, verifyOtp, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loginWithPassword, verifyOtp, signup, updateUser, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
