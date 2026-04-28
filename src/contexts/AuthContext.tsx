@@ -26,8 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // In production, update this to your Render URL: e.g., https://your-app.onrender.com
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  // On Vercel, we can use relative paths if both front and back are on the same domain
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
   useEffect(() => {
     const checkAuth = async () => {

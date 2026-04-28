@@ -16,7 +16,7 @@ const BLOCKS = ['Akkalkuwa', 'Akrani', 'Nandurbar', 'Navapur', 'Shahada', 'Talod
 
 type SortKey = 'di' | 'name' | 'pupils' | 'teachers' | 'ptr' | 'totalVacancies';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function Schools() {
   const { t } = useTranslation();

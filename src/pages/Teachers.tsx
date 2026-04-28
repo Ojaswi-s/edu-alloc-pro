@@ -22,7 +22,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   HIN: 'text-purple-400 bg-purple-400/10 border-purple-400/30',
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function Teachers() {
   const { t } = useTranslation();

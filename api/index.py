@@ -5,7 +5,7 @@ import random
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from models import School, Teacher, User, UserLogin, UserSignup, Token
+from .models import School, Teacher, User, UserLogin, UserSignup, Token
 
 # Configuration
 SECRET_KEY = "your-secret-key-here" # In production, use env var
