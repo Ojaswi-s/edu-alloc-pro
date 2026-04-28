@@ -51,9 +51,9 @@ def initialize_data():
         schools_data.append({
             "id": f"S{1000 + i}",
             "udise": f"27{16000000 + i}",
-            "name": f"{['ZP', 'GP', 'Tribal Ashram', 'Govt Higher', 'Adivasi'][i % 5]} School {villages[i % villages.length]} {i + 1}",
-            "block": blocks[i % blocks.length],
-            "village": villages[i % villages.length],
+            "name": f"{['ZP', 'GP', 'Tribal Ashram', 'Govt Higher', 'Adivasi'][i % 5]} School {villages[i % len(villages)]} {i + 1}",
+            "block": blocks[i % len(blocks)],
+            "village": villages[i % len(villages)],
             "di": di,
             "level": level,
             "dvs": random.randint(50, 100),
